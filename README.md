@@ -1,16 +1,21 @@
-# skill_match
+## Mock API
+The app uses a mock API for offers, exchanges, and map locations.
+# Skill Match App
 
-A new Flutter project.
+An app for exchanging skills between users.
 
-## Getting Started
+## Features
+- Login and Registration
+- Homepage with list of offers and exchanges
+- Create new offers and exchanges
+- Map with meeting locations
 
-This project is a starting point for a Flutter application.
+## User Roles
+- **Person**: Can create and view offers/exchanges
+- **Admin**: Can validate profiles and exchanges
 
-A few resources to get you started if this is your first Flutter project:
+## Setup
+1. Install Flutter.
+2. Run `flutter pub get` to install dependencies.
+3. Run the app using `flutter run`. 
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
