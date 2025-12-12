@@ -167,17 +167,17 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
             shape: BoxShape.circle,
             border: Border.all(
               color:
-                  isCurrentStep ? const Color(0xFF8A4FFF) : Colors.transparent,
+              isCurrentStep ? const Color(0xFF8A4FFF) : Colors.transparent,
               width: 3,
             ),
             boxShadow: isCurrentStep
                 ? [
-                    BoxShadow(
-                      color: const Color(0xFF8A4FFF).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
+              BoxShadow(
+                color: const Color(0xFF8A4FFF).withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ]
                 : null,
           ),
           child: Center(
@@ -235,11 +235,11 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
           runSpacing: 12,
           children: _categories
               .map((c) => _buildCategoryChip(
-                    c['name'],
-                    c['icon'],
-                    _selectedOfferingCategory == c['name'],
-                    () => setState(() => _selectedOfferingCategory = c['name']),
-                  ))
+            c['name'],
+            c['icon'],
+            _selectedOfferingCategory == c['name'],
+                () => setState(() => _selectedOfferingCategory = c['name']),
+          ))
               .toList(),
         ),
         if (_selectedOfferingCategory == null)
@@ -261,11 +261,11 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
           decoration: const InputDecoration(
             labelText: 'Descrição',
             prefixIcon:
-                Icon(Icons.description_outlined, color: Color(0xFF8A4FFF)),
+            Icon(Icons.description_outlined, color: Color(0xFF8A4FFF)),
           ),
           maxLines: 4,
           validator: (v) =>
-              v == null || v.length < 10 ? 'Mínimo 10 caracteres' : null,
+          v == null || v.length < 10 ? 'Mínimo 10 caracteres' : null,
         ),
       ],
     );
@@ -289,12 +289,12 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
           runSpacing: 12,
           children: _categories
               .map((c) => _buildCategoryChip(
-                    c['name'],
-                    c['icon'],
-                    _selectedLookingForCategory == c['name'],
-                    () =>
-                        setState(() => _selectedLookingForCategory = c['name']),
-                  ))
+            c['name'],
+            c['icon'],
+            _selectedLookingForCategory == c['name'],
+                () =>
+                setState(() => _selectedLookingForCategory = c['name']),
+          ))
               .toList(),
         ),
         if (_selectedLookingForCategory == null)
@@ -329,7 +329,7 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
           label: 'Localização preferida',
           icon: Icons.location_on_outlined,
           validator: (v) =>
-              v == null || v.length < 3 ? 'Mínimo 3 caracteres' : null,
+          v == null || v.length < 3 ? 'Mínimo 3 caracteres' : null,
         ),
         const SizedBox(height: 20),
         Container(
@@ -448,12 +448,12 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
           ),
           boxShadow: isSelected
               ? [
-                  BoxShadow(
-                    color: const Color(0xFF8A4FFF).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
+            BoxShadow(
+              color: const Color(0xFF8A4FFF).withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ]
               : null,
         ),
         child: Row(
@@ -535,9 +535,10 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
 
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) => AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -556,8 +557,8 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
-                  context.pop();
-                  context.go('/homepage');
+                  context.pop(); // Fecha o dialog
+                  context.pop(true); // MODIFICAÇÃO: Envia 'true' para a Homepage
                 },
                 child: const Text('Continuar'),
               ),

@@ -1,13 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user_model.dart';
 
 class FirebaseAuthService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Variáveis para guardar os dados na memória da app
   static String? _currentUserId;
   static String? _currentUserName;
+  static String? _currentUserEmail; // <--- NOVO: Guardar o email
 
+  // Getters para aceder aos dados
   static String? get userId => _currentUserId;
   static String? get userName => _currentUserName;
+  static String? get userEmail => _currentUserEmail; // <--- NOVO
   static bool get isAuthenticated => _currentUserId != null;
 
   /// Login user
@@ -26,6 +30,7 @@ class FirebaseAuthService {
       final doc = querySnapshot.docs.first;
       _currentUserId = doc.id;
       _currentUserName = doc.data()['name'] ?? 'User';
+      _currentUserEmail = email; // <--- NOVO: Guardar o email ao entrar
       return true;
     } catch (e) {
       print('Login error: $e');
@@ -48,6 +53,7 @@ class FirebaseAuthService {
 
       _currentUserId = docRef.id;
       _currentUserName = name;
+      _currentUserEmail = email; // <--- NOVO: Guardar o email ao registar
       return true;
     } catch (e) {
       print('Register error: $e');
@@ -58,5 +64,6 @@ class FirebaseAuthService {
   static void logout() {
     _currentUserId = null;
     _currentUserName = null;
+    _currentUserEmail = null;
   }
 }

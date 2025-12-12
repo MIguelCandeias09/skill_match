@@ -42,6 +42,7 @@ class FirebaseOfferService {
   static Future<bool> createOffer(Offer offer) async {
     try {
       await _firestore.collection('offers').add({
+        'userId': FirebaseAuthService.userId,
         'userName': FirebaseAuthService.userName ?? 'User',
         'offering': offer.offering,
         'offeringDescription': offer.offeringDescription,

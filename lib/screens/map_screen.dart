@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/firebase_offer_service.dart';
 import '../services/geocoding_service.dart';
+import '../services/firebase_request_service.dart'; // <--- Importar o serviço
 import '../models/offer_model.dart';
 
 class MapScreen extends StatefulWidget {
@@ -34,15 +35,9 @@ class _MapScreenState extends State<MapScreen> {
     });
 
     try {
-      // Busca ofertas do Firebase
       final offers = await FirebaseOfferService.getOffers();
-
-      // Extrai localizações únicas
       final locations = offers.map((o) => o.location).toSet().toList();
-
-      // Busca coordenadas para cada localização
-      final coordinates =
-          await GeocodingService.getMultipleCoordinates(locations);
+      final coordinates = await GeocodingService.getMultipleCoordinates(locations);
 
       setState(() {
         _offers = offers;
@@ -50,7 +45,6 @@ class _MapScreenState extends State<MapScreen> {
         _isLoading = false;
       });
 
-      // Ajusta o mapa para mostrar todas as ofertas após um pequeno delay
       Future.delayed(const Duration(milliseconds: 500), () {
         _fitMapToMarkers();
       });
@@ -64,12 +58,9 @@ class _MapScreenState extends State<MapScreen> {
 
   void _fitMapToMarkers() {
     if (_mapController == null) return;
-
     final validCoords = _coordinates.values.whereType<LatLng>().toList();
-
     if (validCoords.isEmpty) return;
 
-    // Calcula bounds
     double minLat = validCoords.first.latitude;
     double maxLat = validCoords.first.latitude;
     double minLng = validCoords.first.longitude;
@@ -82,7 +73,6 @@ class _MapScreenState extends State<MapScreen> {
       if (coord.longitude > maxLng) maxLng = coord.longitude;
     }
 
-    // Centro e zoom para incluir todos os marcadores
     final center = LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2);
     _mapController!.move(center, 10.0);
   }
@@ -105,85 +95,80 @@ class _MapScreenState extends State<MapScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('A carregar coordenadas...'),
-                ],
-              ),
-            )
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('A carregar coordenadas...'),
+          ],
+        ),
+      )
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(_error!),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadOffersWithCoordinates,
-                        child: const Text('Tentar novamente'),
-                      ),
-                    ],
-                  ),
-                )
-              : FlutterMap(
-                  mapController: _mapController ??= MapController(),
-                  options: MapOptions(
-                    initialCenter: _center,
-                    initialZoom: 12.0,
-                    minZoom: 5.0,
-                    maxZoom: 18.0,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.example.skill_match',
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(_error!),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadOffersWithCoordinates,
+              child: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      )
+          : FlutterMap(
+        mapController: _mapController ??= MapController(),
+        options: MapOptions(
+          initialCenter: _center,
+          initialZoom: 12.0,
+          minZoom: 5.0,
+          maxZoom: 18.0,
+        ),
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.example.skill_match',
+          ),
+          MarkerLayer(
+            markers: _offers
+                .where((offer) => _coordinates[offer.location] != null)
+                .map((offer) {
+              final coordinates = _coordinates[offer.location]!;
+              return Marker(
+                point: coordinates,
+                width: 40,
+                height: 40,
+                child: GestureDetector(
+                  onTap: () => _showOfferDetails(context, offer),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8A4FFF),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    MarkerLayer(
-                      markers: _offers
-                          .where(
-                              (offer) => _coordinates[offer.location] != null)
-                          .map((offer) {
-                        final coordinates = _coordinates[offer.location]!;
-
-                        return Marker(
-                          point: coordinates,
-                          width: 40,
-                          height: 40,
-                          child: GestureDetector(
-                            onTap: () => _showOfferDetails(context, offer),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF8A4FFF),
-                                shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.white, width: 3),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.swap_horiz_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                    child: const Icon(
+                      Icons.swap_horiz_rounded,
+                      color: Colors.white,
+                      size: 20,
                     ),
-                  ],
+                  ),
                 ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -221,20 +206,13 @@ class _MapScreenState extends State<MapScreen> {
                     children: [
                       Text(
                         offer.userName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.location_on,
-                              size: 14, color: Colors.grey),
+                          const Icon(Icons.location_on, size: 14, color: Colors.grey),
                           const SizedBox(width: 4),
-                          Text(
-                            offer.location,
-                            style: const TextStyle(color: Colors.grey),
-                          ),
+                          Text(offer.location, style: const TextStyle(color: Colors.grey)),
                         ],
                       ),
                     ],
@@ -255,19 +233,9 @@ class _MapScreenState extends State<MapScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Oferece',
-                          style: TextStyle(
-                            color: Color(0xFF8A4FFF),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        const Text('Oferece', style: TextStyle(color: Color(0xFF8A4FFF), fontSize: 12, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
-                        Text(
-                          offer.offering,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                        Text(offer.offering, style: const TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -283,19 +251,9 @@ class _MapScreenState extends State<MapScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Procura',
-                          style: TextStyle(
-                            color: Color(0xFFFF6B9D),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        const Text('Procura', style: TextStyle(color: Color(0xFFFF6B9D), fontSize: 12, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
-                        Text(
-                          offer.lookingFor,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                        Text(offer.lookingFor, style: const TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -304,7 +262,28 @@ class _MapScreenState extends State<MapScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                Navigator.pop(context);
+
+                // --- LÓGICA DE ENVIAR PEDIDO ---
+                final success = await FirebaseRequestService.sendRequest(
+                  toUserId: offer.userId,
+                  toUserName: offer.userName,
+                  offerTitle: offer.offering,
+                );
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(success ? 'Pedido enviado com sucesso!' : 'Erro ao enviar pedido.'),
+                      backgroundColor: success ? const Color(0xFF8A4FFF) : Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                      margin: const EdgeInsets.all(16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                }
+              },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 48),
               ),

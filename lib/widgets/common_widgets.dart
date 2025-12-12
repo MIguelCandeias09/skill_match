@@ -72,6 +72,7 @@ class OfferCard extends StatelessWidget {
   final int reviews;
   final String offering;
   final String lookingFor;
+  final VoidCallback? onContactTap; // <--- NOVO: Variável para receber a ação
 
   const OfferCard({
     Key? key,
@@ -82,6 +83,7 @@ class OfferCard extends StatelessWidget {
     required this.reviews,
     required this.offering,
     required this.lookingFor,
+    this.onContactTap, // <--- NOVO: Adicionado ao construtor
   }) : super(key: key);
 
   @override
@@ -261,7 +263,7 @@ class OfferCard extends StatelessWidget {
                     Expanded(
                       flex: 2,
                       child: ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: onContactTap, // <--- NOVO: O botão agora usa a função
                         icon: const Icon(Icons.chat_bubble_outline, size: 18),
                         label: const Text('Contactar'),
                         style: ElevatedButton.styleFrom(
