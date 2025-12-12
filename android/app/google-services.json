@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "35779139020",
+    "project_id": "skill-match-71500",
+    "storage_bucket": "skill-match-71500.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:35779139020:android:4c2bb3c2787287a0b27969",
+        "android_client_info": {
+          "package_name": "pt.iscte.skill_match"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNet0YLwXG-xgJYFETFYjYdyRLx1FZYQc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
