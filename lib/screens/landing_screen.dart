@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:math' as math;
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({Key? key}) : super(key: key);
@@ -9,354 +9,295 @@ class LandingScreen extends StatefulWidget {
   State<LandingScreen> createState() => _LandingScreenState();
 }
 
-class _LandingScreenState extends State<LandingScreen> with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-  late AnimationController _floatingController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _floatingAnimation;
+class _LandingScreenState extends State<LandingScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  Timer? _timer;
+
+  // Dados do Carrossel Informativo
+  final List<Map<String, dynamic>> _slides = [
+    {
+      'title': 'Troca de Talentos',
+      'desc': 'Ensina o que sabes, aprende o que amas.\nSem dinheiro envolvido.',
+      'icon': Icons.swap_horiz_rounded,
+    },
+    {
+      'title': 'Encontra Mentores',
+      'desc': 'Descobre pessoas perto de ti dispostas\na partilhar conhecimento.',
+      'icon': Icons.map_rounded,
+    },
+    {
+      'title': 'Evolui na Carreira',
+      'desc': 'Melhora o teu currículo com novas skills\nvalidadas pela comunidade.',
+      'icon': Icons.rocket_launch_rounded,
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
-    
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-    
-    _floatingController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat(reverse: true);
-    
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
-    );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
-    
-    _floatingAnimation = Tween<double>(
-      begin: -10,
-      end: 10,
-    ).animate(CurvedAnimation(
-      parent: _floatingController,
-      curve: Curves.easeInOut,
-    ));
-    
-    _fadeController.forward();
-    _slideController.forward();
+    // Auto-scroll do carrossel a cada 4 segundos
+    _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
+      if (_currentPage < _slides.length - 1) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutQuart,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
-    _slideController.dispose();
-    _floatingController.dispose();
+    _timer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Altura do ecrã para cálculos responsivos
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF8A4FFF),
-              Color(0xFF6B3FCC),
-              Color(0xFF4A2F99),
-            ],
+      body: Stack(
+        children: [
+          // 1. Fundo com Gradiente e Formas
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF8A4FFF), // Roxo Principal
+                  Color(0xFF6B3FCC), // Roxo Escuro
+                ],
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Floating background elements
-              ...List.generate(15, (index) => _buildFloatingElement(index, size)),
-              
-              // Main content
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 40),
-                          
-                          // Logo and title
-                          AnimatedBuilder(
-                            animation: _floatingAnimation,
-                            builder: (context, child) {
-                              return Transform.translate(
-                                offset: Offset(0, _floatingAnimation.value),
-                                child: child,
-                              );
-                            },
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(28),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 10),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.swap_horiz_rounded,
-                                    size: 50,
-                                    color: Color(0xFF8A4FFF),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                const Text(
-                                  'Skill Match',
-                                  style: TextStyle(
-                                    fontSize: 42,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    letterSpacing: 1.5,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Troca de Habilidades, Crescimento Mútuo',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
+          // Círculos decorativos de fundo
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 200,
+            left: -30,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFF6B9D).withOpacity(0.15),
+              ),
+            ),
+          ),
+
+          // 2. Conteúdo Principal
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+
+                // Logo e Nome da App
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           ),
-                          
-                          const SizedBox(height: 50),
-                          
-                          // Features as cards - All in one row
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildFeatureCard(
-                                  Icons.school_rounded,
-                                  'Ensina o que sabes',
-                                  'Partilha os teus talentos',
-                                  const Color(0xFF8A4FFF),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildFeatureCard(
-                                  Icons.psychology_rounded,
-                                  'Aprende algo novo',
-                                  'Descobre habilidades',
-                                  const Color(0xFFFF6B9D),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildFeatureCard(
-                                  Icons.people_rounded,
-                                  'Conecta-te',
-                                  'Conhece pessoas incríveis',
-                                  const Color(0xFF4CAF50),
-                                ),
-                              ),
-                            ],
-                          ),
-                          
-                          const SizedBox(height: 50),
-                          
-                          // Buttons - Centered with max width
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 400),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () => context.go('/login'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF8A4FFF),
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    elevation: 5,
-                                    shadowColor: Colors.black.withOpacity(0.3),
-                                  ),
-                                  child: const Text(
-                                    'Entrar',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
-                                OutlinedButton(
-                                  onPressed: () => context.go('/register'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    side: const BorderSide(color: Colors.white, width: 2),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Criar Conta',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 40),
                         ],
+                      ),
+                      child: const Icon(
+                        Icons.handshake_rounded,
+                        color: Color(0xFF8A4FFF),
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Text(
+                      'Skill Match',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Spacer(),
+
+                // 3. Carrossel de Informação (PageView)
+                SizedBox(
+                  height: 300,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (int index) {
+                      setState(() => _currentPage = index);
+                    },
+                    itemCount: _slides.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 2,
+                              ),
+                            ),
+                            child: Icon(
+                              _slides[index]['icon'],
+                              size: 64,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          Text(
+                            _slides[index]['title'],
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
+                            child: Text(
+                              _slides[index]['desc'],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white.withOpacity(0.9),
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+
+                // Indicadores de Página (As bolinhas)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _slides.length,
+                        (index) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      height: 8,
+                      width: _currentPage == index ? 24 : 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index
+                            ? const Color(0xFFFF6B9D) // Rosa ativo
+                            : Colors.white.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildFeatureCard(IconData icon, String title, String description, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+                const Spacer(),
+
+                // 4. Botões de Ação (Bottom Sheet Style)
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Botão Principal: Começar (Registo)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () => context.push('/register'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF8A4FFF),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text(
+                            'Começar Agora',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Botão Secundário: Login
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: OutlinedButton(
+                          onPressed: () => context.push('/login'),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF8A4FFF), width: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text(
+                            'Já tenho conta',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF8A4FFF),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 36,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            description,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF9E9E9E),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingElement(int index, Size size) {
-    final random = math.Random(index);
-    final left = random.nextDouble() * size.width;
-    final top = random.nextDouble() * size.height;
-    final elementSize = 20.0 + random.nextDouble() * 60;
-    final isCircle = random.nextBool();
-    
-    return Positioned(
-      left: left,
-      top: top,
-      child: AnimatedBuilder(
-        animation: _floatingController,
-        builder: (context, child) {
-          final offset = math.sin((_floatingController.value * 2 * math.pi) + index) * 20;
-          return Transform.translate(
-            offset: Offset(offset, offset),
-            child: child,
-          );
-        },
-        child: Opacity(
-          opacity: 0.1,
-          child: Container(
-            width: elementSize,
-            height: elementSize,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
-              borderRadius: isCircle ? null : BorderRadius.circular(8),
-            ),
-          ),
-        ),
       ),
     );
   }
