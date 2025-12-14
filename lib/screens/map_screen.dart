@@ -3,7 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/firebase_offer_service.dart';
 import '../services/geocoding_service.dart';
-import '../services/firebase_request_service.dart'; // <--- Importar o serviço
+import '../services/firebase_request_service.dart'; //  Importar o serviço
 import '../models/offer_model.dart';
 
 class MapScreen extends StatefulWidget {
