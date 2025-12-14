@@ -5,19 +5,28 @@ import 'firebase_auth_service.dart';
 class FirebaseOfferService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Fetches all offers from Firestore
-  static Future<List<Offer>> getOffers() async {
+  /// Fetches offers from Firestore, optionally filtered by category
+  static Future<List<Offer>> getOffers({String? category}) async {
     try {
-      final querySnapshot = await _firestore
-          .collection('offers')
-          .orderBy('createdAt', descending: true)
-          .get();
+      // 1. Começamos com a referência base
+      Query query = _firestore.collection('offers');
+
+      // 2. Se houver categoria e não for 'Todos', aplicamos o filtro
+      if (category != null && category != 'Todos') {
+        query = query.where('offeringCategory', isEqualTo: category);
+      }
+
+      // 3. Ordenamos por data (necessário criar índice no Firebase se der erro na consola)
+      query = query.orderBy('createdAt', descending: true);
+
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs.map((doc) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
         return Offer(
           id: doc.id,
-          userId: doc.id,
+          // CORREÇÃO IMPORTANTE: O userId vem dos dados, não do ID do documento
+          userId: data['userId'] ?? '',
           userName: data['userName'] ?? 'User',
           offering: data['offering'] ?? '',
           offeringDescription: data['offeringDescription'] ?? '',

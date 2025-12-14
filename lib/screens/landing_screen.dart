@@ -14,7 +14,6 @@ class _LandingScreenState extends State<LandingScreen> {
   int _currentPage = 0;
   Timer? _timer;
 
-  // Dados do Carrossel Informativo
   final List<Map<String, dynamic>> _slides = [
     {
       'title': 'Troca de Talentos',
@@ -36,7 +35,6 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-scroll do carrossel a cada 4 segundos
     _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _slides.length - 1) {
         _currentPage++;
@@ -63,26 +61,27 @@ class _LandingScreenState extends State<LandingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Altura do ecrã para cálculos responsivos
     final size = MediaQuery.of(context).size;
+    // Detetar se é Web/Desktop (ecrã largo)
+    final isWeb = size.width > 600;
 
     return Scaffold(
       body: Stack(
         children: [
-          // 1. Fundo com Gradiente e Formas
+          // 1. Fundo com Gradiente
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF8A4FFF), // Roxo Principal
-                  Color(0xFF6B3FCC), // Roxo Escuro
+                  Color(0xFF8A4FFF),
+                  Color(0xFF6B3FCC),
                 ],
               ),
             ),
           ),
-          // Círculos decorativos de fundo
+          // Decorações de fundo
           Positioned(
             top: -50,
             right: -50,
@@ -91,7 +90,7 @@ class _LandingScreenState extends State<LandingScreen> {
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -103,18 +102,18 @@ class _LandingScreenState extends State<LandingScreen> {
               height: 150,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF6B9D).withOpacity(0.15),
+                color: const Color(0xFFFF6B9D).withValues(alpha: 0.15),
               ),
             ),
           ),
 
-          // 2. Conteúdo Principal
+          // 2. Conteúdo
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 40),
 
-                // Logo e Nome da App
+                // Logo
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -125,7 +124,7 @@ class _LandingScreenState extends State<LandingScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: .2),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -152,7 +151,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
                 const Spacer(),
 
-                // 3. Carrossel de Informação (PageView)
+                // Carrossel
                 SizedBox(
                   height: 300,
                   child: PageView.builder(
@@ -168,10 +167,10 @@ class _LandingScreenState extends State<LandingScreen> {
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: .1),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: .2),
                                 width: 2,
                               ),
                             ),
@@ -198,7 +197,7 @@ class _LandingScreenState extends State<LandingScreen> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: .9),
                                 height: 1.5,
                               ),
                             ),
@@ -209,7 +208,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   ),
                 ),
 
-                // Indicadores de Página (As bolinhas)
+                // Indicadores
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -221,8 +220,8 @@ class _LandingScreenState extends State<LandingScreen> {
                       width: _currentPage == index ? 24 : 8,
                       decoration: BoxDecoration(
                         color: _currentPage == index
-                            ? const Color(0xFFFF6B9D) // Rosa ativo
-                            : Colors.white.withOpacity(0.4),
+                            ? const Color(0xFFFF6B9D)
+                            : Colors.white.withValues(alpha: .4),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -231,7 +230,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
                 const Spacer(),
 
-                // 4. Botões de Ação (Bottom Sheet Style)
+                // 4. Área dos Botões (CORRIGIDA)
                 Container(
                   padding: const EdgeInsets.all(32),
                   width: double.infinity,
@@ -244,9 +243,12 @@ class _LandingScreenState extends State<LandingScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Botão Principal: Começar (Registo)
+                      // Botão Começar Agora
                       SizedBox(
-                        width: double.infinity,
+                        // AQUI ESTÁ A LÓGICA:
+                        // Se for Web (isWeb == true), largura fixa de 400px.
+                        // Se for Mobile, largura total (double.infinity).
+                        width: isWeb ? 400 : double.infinity,
                         height: 56,
                         child: ElevatedButton(
                           onPressed: () => context.push('/register'),
@@ -269,9 +271,10 @@ class _LandingScreenState extends State<LandingScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Botão Secundário: Login
+                      // Botão Login
                       SizedBox(
-                        width: double.infinity,
+                        // Mesma lógica aqui
+                        width: isWeb ? 400 : double.infinity,
                         height: 56,
                         child: OutlinedButton(
                           onPressed: () => context.push('/login'),

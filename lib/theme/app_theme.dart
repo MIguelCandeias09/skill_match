@@ -37,7 +37,7 @@ class AppTheme {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         elevation: 3,
-        shadowColor: primaryColor.withOpacity(0.4),
+        shadowColor: primaryColor.withValues(alpha: 0.4),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -101,13 +101,13 @@ class AppTheme {
         fontSize: 15,
       ),
       hintStyle: TextStyle(
-        color: greyColor.withOpacity(0.6),
+        color: greyColor.withValues(alpha: 0.6),
         fontSize: 14,
       ),
     ),
     cardTheme: CardThemeData(
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),

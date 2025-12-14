@@ -15,7 +15,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   MapController? _mapController;
-  final LatLng _center = LatLng(38.7223, -9.1393);
+  static const LatLng _center = LatLng(38.7223, -9.1393);
 
   List<Offer> _offers = [];
   Map<String, LatLng?> _coordinates = {};
@@ -122,7 +122,7 @@ class _MapScreenState extends State<MapScreen> {
       )
           : FlutterMap(
         mapController: _mapController ??= MapController(),
-        options: MapOptions(
+        options: const MapOptions(
           initialCenter: _center,
           initialZoom: 12.0,
           minZoom: 5.0,
@@ -151,7 +151,7 @@ class _MapScreenState extends State<MapScreen> {
                       border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.3),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -227,7 +227,7 @@ class _MapScreenState extends State<MapScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8A4FFF).withOpacity(0.1),
+                      color: const Color(0xFF8A4FFF).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -245,7 +245,7 @@ class _MapScreenState extends State<MapScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF6B9D).withOpacity(0.1),
+                      color: const Color(0xFFFF6B9D).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(

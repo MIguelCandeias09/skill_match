@@ -95,7 +95,7 @@ class OfferCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
@@ -179,7 +179,7 @@ class OfferCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF8A4FFF).withOpacity(0.1),
+                          color: const Color(0xFF8A4FFF).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Column(
@@ -219,7 +219,7 @@ class OfferCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF6B9D).withOpacity(0.1),
+                          color: const Color(0xFFFF6B9D).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Column(
@@ -295,9 +295,9 @@ class AuthScaffold extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF8A4FFF).withOpacity(0.05),
+              const Color(0xFF8A4FFF).withValues(alpha: 0.05),
               Colors.white,
-              const Color(0xFFE5D4FF).withOpacity(0.1),
+              const Color(0xFFE5D4FF).withValues(alpha: 0.1),
             ],
           ),
         ),
@@ -332,4 +332,54 @@ void showErrorSnackbar(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(message)),
   );
+}
+
+// ... (teu código anterior) ...
+
+// ==============================================================================
+// WIDGET RESPONSIVO PARA WEB
+// ==============================================================================
+class ResponsiveWebContainer extends StatelessWidget {
+  final Widget child;
+  // Largura máxima que o conteúdo pode ter na Web (800px é um bom valor estilo tablet)
+  final double maxWidth;
+
+  const ResponsiveWebContainer({
+    Key? key,
+    required this.child,
+    this.maxWidth = 800,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Verificar a largura do ecrã atual
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Se for maior que o maxWidth (ex: monitor de PC), aplica restrições
+    if (screenWidth > maxWidth) {
+      return Center(
+        child: Container(
+          width: maxWidth,
+          // Adicionar uma sombra subtil na Web para destacar o conteúdo do fundo
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 0),
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          // Clip para garantir que nada sai fora dos limites
+          clipBehavior: Clip.hardEdge,
+          child: child,
+        ),
+      );
+    }
+
+    // Se for telemóvel, retorna o widget normal sem alterações
+    return child;
+  }
 }

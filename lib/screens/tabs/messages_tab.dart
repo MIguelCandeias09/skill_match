@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // Adiciona esta linha se tiveres o pacote intl, senão remove a formatação da data
 import '../../services/firebase_request_service.dart';
 
 class MessagesTab extends StatelessWidget {
@@ -66,7 +65,7 @@ class MessagesTab extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.05),
+              shadowColor: Colors.black.withValues(alpha: .05),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -100,7 +99,7 @@ class MessagesTab extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.1),
+                            color: statusColor.withValues(alpha: .1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(

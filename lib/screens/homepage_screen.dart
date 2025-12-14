@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// Importa as novas Tabs (nota os '..' porque agora estão numa subpasta)
+// Importa as tabs que já criaste nas pastas certas
 import 'tabs/home_tab.dart';
 import 'tabs/explore_tab.dart';
 import 'tabs/messages_tab.dart';
@@ -16,19 +16,23 @@ class HomepageScreen extends StatefulWidget {
 
 class _HomepageScreenState extends State<HomepageScreen> {
   int _selectedIndex = 0;
+
+  // Chave Global para aceder à função 'refreshOffers' dentro da ExploreTab
   final GlobalKey<ExploreTabState> _exploreTabKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
+    // Títulos da AppBar para cada ecrã (o Início fica vazio porque tem banner)
     final titles = ['', 'Explorar', 'Mensagens', 'Perfil'];
 
     return Scaffold(
+      // A AppBar só aparece se não estivermos na aba Início (index 0)
       appBar: _selectedIndex == 0
           ? null
           : AppBar(
         title: Text(titles[_selectedIndex]),
-        automaticallyImplyLeading: false,
-        actions: _selectedIndex == 1
+        automaticallyImplyLeading: false, // Remove a seta de voltar automática
+        actions: _selectedIndex == 1 // Botão do mapa apenas na aba Explorar
             ? [
           IconButton(
             icon: const Icon(Icons.map_outlined),
@@ -37,13 +41,15 @@ class _HomepageScreenState extends State<HomepageScreen> {
         ]
             : null,
       ),
+
+      // IndexedStack mantém as abas vivas em memória (não perdes o scroll nem o texto)
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF8A4FFF).withOpacity(0.03),
+              const Color(0xFF8A4FFF).withValues(alpha: 0.03),
               Colors.white,
             ],
           ),
@@ -51,20 +57,32 @@ class _HomepageScreenState extends State<HomepageScreen> {
         child: IndexedStack(
           index: _selectedIndex,
           children: [
+            // Aba 0: Início
             HomeTab(onExploreTap: () => setState(() => _selectedIndex = 1)),
+
+            // Aba 1: Explorar (Passamos a chave aqui para poder recarregar a lista depois)
             ExploreTab(key: _exploreTabKey),
+
+            // Aba 2: Mensagens
             const MessagesTab(),
+
+            // Aba 3: Perfil
             const ProfileTab(),
           ],
         ),
       ),
+
+      // Botão Flutuante (+ Nova Oferta) apenas no Início e Explorar
       floatingActionButton: (_selectedIndex <= 1)
           ? FloatingActionButton.extended(
         onPressed: () async {
+          // Navega para o ecrã de criar e espera pelo resultado (true/false)
           final result = await context.push('/create-offer');
+
+          // Se a oferta foi criada com sucesso (result == true)
           if (result == true) {
-            setState(() => _selectedIndex = 1);
-            _exploreTabKey.currentState?.refreshOffers();
+            setState(() => _selectedIndex = 1); // Força a mudança para a aba Explorar
+            _exploreTabKey.currentState?.refreshOffers(); // Chama a função pública para recarregar dados
           }
         },
         label: const Text('Nova Oferta', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -72,11 +90,13 @@ class _HomepageScreenState extends State<HomepageScreen> {
         elevation: 4,
       )
           : null,
+
+      // Menu de Navegação Inferior
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
