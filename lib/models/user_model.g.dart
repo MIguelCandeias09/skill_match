@@ -14,6 +14,10 @@ _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
       verified: json['verified'] as bool? ?? false,
+      favorites: (json['favorites'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -28,5 +32,6 @@ Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
       'rating': instance.rating,
       'reviewCount': instance.reviewCount,
       'verified': instance.verified,
+      'favorites': instance.favorites,
       'createdAt': instance.createdAt?.toIso8601String(),
     };

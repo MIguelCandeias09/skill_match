@@ -13,6 +13,7 @@ class User with _$User {
     @Default(0.0) double rating,
     @Default(0) int reviewCount,
     @Default(false) bool verified,
+    @Default([]) List<String> favorites, // Lista de IDs das ofertas favoritas
     DateTime? createdAt,
   }) = _User;
 

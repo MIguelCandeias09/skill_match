@@ -72,7 +72,10 @@ class OfferCard extends StatelessWidget {
   final int reviews;
   final String offering;
   final String lookingFor;
-  final VoidCallback? onContactTap; // <--- NOVO: Variável para receber a ação
+  final VoidCallback? onContactTap;
+  // --- NOVOS CAMPOS PARA FAVORITOS ---
+  final bool isFavorite;
+  final VoidCallback? onFavoriteTap;
 
   const OfferCard({
     Key? key,
@@ -83,7 +86,10 @@ class OfferCard extends StatelessWidget {
     required this.reviews,
     required this.offering,
     required this.lookingFor,
-    this.onContactTap, // <--- NOVO: Adicionado ao construtor
+    this.onContactTap,
+    // --- VALOR PADRÃO FALSE ---
+    this.isFavorite = false,
+    this.onFavoriteTap,
   }) : super(key: key);
 
   @override
@@ -165,11 +171,15 @@ class OfferCard extends StatelessWidget {
                         ],
                       ),
                     ),
+                    // --- BOTÃO CORAÇÃO FUNCIONAL ---
                     IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.favorite_border_rounded,
-                          color: Color(0xFFFF6B9D)),
+                      onPressed: onFavoriteTap,
+                      icon: Icon(
+                        isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        color: const Color(0xFFFF6B9D),
+                      ),
                     ),
+                    // -------------------------------
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -263,7 +273,7 @@ class OfferCard extends StatelessWidget {
                     Expanded(
                       flex: 2,
                       child: ElevatedButton.icon(
-                        onPressed: onContactTap, // <--- NOVO: O botão agora usa a função
+                        onPressed: onContactTap,
                         icon: const Icon(Icons.chat_bubble_outline, size: 18),
                         label: const Text('Contactar'),
                         style: ElevatedButton.styleFrom(
@@ -334,14 +344,8 @@ void showErrorSnackbar(BuildContext context, String message) {
   );
 }
 
-// ... (teu código anterior) ...
-
-// ==============================================================================
-// WIDGET RESPONSIVO PARA WEB
-// ==============================================================================
 class ResponsiveWebContainer extends StatelessWidget {
   final Widget child;
-  // Largura máxima que o conteúdo pode ter na Web (800px é um bom valor estilo tablet)
   final double maxWidth;
 
   const ResponsiveWebContainer({
@@ -352,15 +356,12 @@ class ResponsiveWebContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Verificar a largura do ecrã atual
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Se for maior que o maxWidth (ex: monitor de PC), aplica restrições
     if (screenWidth > maxWidth) {
       return Center(
         child: Container(
           width: maxWidth,
-          // Adicionar uma sombra subtil na Web para destacar o conteúdo do fundo
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
@@ -372,14 +373,12 @@ class ResponsiveWebContainer extends StatelessWidget {
               ),
             ],
           ),
-          // Clip para garantir que nada sai fora dos limites
           clipBehavior: Clip.hardEdge,
           child: child,
         ),
       );
     }
 
-    // Se for telemóvel, retorna o widget normal sem alterações
     return child;
   }
 }

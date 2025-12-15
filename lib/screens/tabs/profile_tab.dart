@@ -1,195 +1,141 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/firebase_auth_service.dart';
+import '../../theme/app_theme.dart';
+import '../favorites_screen.dart'; // <--- Importante: Importar o ecrã de favoritos
 
-class ProfileTab extends StatefulWidget {
+class ProfileTab extends StatelessWidget {
   const ProfileTab({Key? key}) : super(key: key);
 
   @override
-  State<ProfileTab> createState() => _ProfileTabState();
-}
-
-class _ProfileTabState extends State<ProfileTab> {
-  double _rating = 0.0;
-  int _reviewCount = 0;
-  int _offersCount = 0;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserProfileData();
-  }
-
-  Future<void> _loadUserProfileData() async {
-    final userId = FirebaseAuthService.userId;
-    final userName = FirebaseAuthService.userName;
-
-    if (userId == null) {
-      if (mounted) setState(() => _isLoading = false);
-      return;
-    }
-
-    try {
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-      final offersQuery = await FirebaseFirestore.instance
-          .collection('offers')
-          .where('userName', isEqualTo: userName)
-          .get();
-
-      if (mounted) {
-        setState(() {
-          if (userDoc.exists) {
-            final data = userDoc.data()!;
-            _rating = (data['rating'] ?? 0.0).toDouble();
-            _reviewCount = (data['reviewCount'] ?? 0).toInt();
-          }
-          _offersCount = offersQuery.docs.length;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final name = FirebaseAuthService.userName ?? 'Convidado';
-    final email = FirebaseAuthService.userEmail ?? 'Sem email';
-
-    String getInitials(String name) {
-      if (name.isEmpty) return 'U';
-      List<String> names = name.split(" ");
-      String initials = "";
-      if (names.isNotEmpty) initials += names[0][0];
-      if (names.length > 1) initials += names[names.length - 1][0];
-      return initials.toUpperCase();
-    }
+    // Obter dados do serviço
+    final user = FirebaseAuthService.userName ?? 'Utilizador';
+    final email = FirebaseAuthService.userEmail ?? 'email@exemplo.com';
+    final favCount = FirebaseAuthService.favoriteIds.length; // Contagem de favoritos
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      child: Center(
-        // Garante que o conteúdo não ultrapassa 800px e fica centrado
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 800),
-          child: Column(
-            children: [
-              // Cabeçalho do Perfil
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: const Color(0xFFE5D4FF),
-                child: Text(
-                  getInitials(name),
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF8A4FFF)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              Text(email, style: const TextStyle(color: Colors.grey)),
-              const SizedBox(height: 32),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
 
-              // Estatísticas
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : Container(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildStat(_rating.toStringAsFixed(1), 'Rating'),
-                    _buildStat(_reviewCount.toString(), 'Reviews'),
-                    _buildStat(_offersCount.toString(), 'Ofertas'),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // MENU DE OPÇÕES (Botões Largos)
-              // Agora são cartões bonitos em vez de linhas simples
-              _buildMenuOption(Icons.person_outline, 'Editar Perfil'),
-              _buildMenuOption(Icons.favorite_border, 'Favoritos'),
-              _buildMenuOption(Icons.settings_outlined, 'Definições'),
-              _buildMenuOption(Icons.help_outline, 'Ajuda'),
-
-              const SizedBox(height: 24), // Espaço extra antes de sair
-
-              _buildMenuOption(Icons.logout, 'Terminar Sessão',
-                color: Colors.red,
-                isLogout: true,
-                onTap: () {
-                  FirebaseAuthService.logout();
-                  context.go('/login');
-                },
-              ),
-
-              const SizedBox(height: 40),
-            ],
+          // === AVATAR E NOME ===
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withAlpha(25),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.person, size: 50, color: AppTheme.primaryColor),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStat(String value, String label) {
-    return Column(
-      children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF8A4FFF))),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-      ],
-    );
-  }
-
-  // Função melhorada para criar botões com aspeto de "Cartão"
-  Widget _buildMenuOption(IconData icon, String label, {Color? color, VoidCallback? onTap, bool isLogout = false}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16), // Espaço entre botões
-      decoration: BoxDecoration(
-        color: isLogout ? const Color(0xFFFFF0F0) : Colors.white, // Fundo vermelho claro para logout
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+          const SizedBox(height: 16),
+          Text(
+              user,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
           ),
+          Text(
+              email,
+              style: TextStyle(color: Colors.grey[600])
+          ),
+
+          const SizedBox(height: 40),
+
+          // === SECÇÃO DE DEFINIÇÕES ===
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withAlpha(12),
+                    blurRadius: 10
+                )
+              ],
+            ),
+            child: Column(
+              children: [
+                // Opção 1: Editar Perfil
+                ListTile(
+                  leading: const Icon(Icons.person_outline, color: AppTheme.primaryColor),
+                  title: const Text('Editar Perfil'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    // Futuro: Navegar para editar perfil
+                  },
+                ),
+
+                const Divider(height: 1),
+
+                // Opção 2: FAVORITOS (A funcionar)
+                ListTile(
+                  leading: const Icon(Icons.favorite_border, color: AppTheme.primaryColor),
+                  title: const Text('Favoritos'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Badge com número se tiver favoritos
+                      if (favCount > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF6B9D),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                              '$favCount',
+                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)
+                          ),
+                        ),
+                      const Icon(Icons.arrow_forward_ios, size: 16),
+                    ],
+                  ),
+                  onTap: () {
+                    // Navegar para o ecrã de favoritos
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const FavoritesScreen()),
+                    );
+                  },
+                ),
+
+                const Divider(height: 1),
+
+                // Opção 3: Definições
+                ListTile(
+                  leading: const Icon(Icons.settings_outlined, color: AppTheme.primaryColor),
+                  title: const Text('Definições'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // === BOTÃO LOGOUT ===
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: () {
+                FirebaseAuthService.logout();
+                context.go('/'); // Voltar para o Login
+              },
+              icon: const Icon(Icons.logout, color: Colors.red),
+              label: const Text('Terminar Sessão', style: TextStyle(color: Colors.red)),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: Colors.red.withAlpha(12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 40), // Espaço extra no fundo
         ],
-        border: isLogout ? Border.all(color: Colors.red.withValues(alpha: .2)) : null,
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: (color ?? const Color(0xFF8A4FFF)).withValues(alpha: .1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color ?? const Color(0xFF8A4FFF), size: 20),
-        ),
-        title: Text(
-            label,
-            style: TextStyle(
-              color: color ?? const Color(0xFF1A1A1A),
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            )
-        ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: onTap ?? () {},
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

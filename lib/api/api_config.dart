@@ -1,7 +1,6 @@
 /// API Configuration
 class ApiConfig {
-  // Base URL for the backend API
-  // Change this to your server's IP address if testing on physical device
+  // Base URL for the backend APi
   // For Android emulator, use 10.0.2.2
   // For iOS simulator, use localhost or 127.0.0.1
   static const String baseUrl = 'http://localhost:3000/api';

@@ -27,6 +27,8 @@ mixin _$User {
   double get rating => throw _privateConstructorUsedError;
   int get reviewCount => throw _privateConstructorUsedError;
   bool get verified => throw _privateConstructorUsedError;
+  List<String> get favorites =>
+      throw _privateConstructorUsedError; // Lista de IDs das ofertas favoritas
   DateTime? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this User to a JSON map.
@@ -51,6 +53,7 @@ abstract class $UserCopyWith<$Res> {
       double rating,
       int reviewCount,
       bool verified,
+      List<String> favorites,
       DateTime? createdAt});
 }
 
@@ -76,6 +79,7 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? rating = null,
     Object? reviewCount = null,
     Object? verified = null,
+    Object? favorites = null,
     Object? createdAt = freezed,
   }) {
     return _then(_value.copyWith(
@@ -107,6 +111,10 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
           ? _value.verified
           : verified // ignore: cast_nullable_to_non_nullable
               as bool,
+      favorites: null == favorites
+          ? _value.favorites
+          : favorites // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -130,6 +138,7 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
       double rating,
       int reviewCount,
       bool verified,
+      List<String> favorites,
       DateTime? createdAt});
 }
 
@@ -152,6 +161,7 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? rating = null,
     Object? reviewCount = null,
     Object? verified = null,
+    Object? favorites = null,
     Object? createdAt = freezed,
   }) {
     return _then(_$UserImpl(
@@ -183,6 +193,10 @@ class __$$UserImplCopyWithImpl<$Res>
           ? _value.verified
           : verified // ignore: cast_nullable_to_non_nullable
               as bool,
+      favorites: null == favorites
+          ? _value._favorites
+          : favorites // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -202,7 +216,9 @@ class _$UserImpl implements _User {
       this.rating = 0.0,
       this.reviewCount = 0,
       this.verified = false,
-      this.createdAt});
+      final List<String> favorites = const [],
+      this.createdAt})
+      : _favorites = favorites;
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserImplFromJson(json);
@@ -224,12 +240,22 @@ class _$UserImpl implements _User {
   @override
   @JsonKey()
   final bool verified;
+  final List<String> _favorites;
+  @override
+  @JsonKey()
+  List<String> get favorites {
+    if (_favorites is EqualUnmodifiableListView) return _favorites;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_favorites);
+  }
+
+// Lista de IDs das ofertas favoritas
   @override
   final DateTime? createdAt;
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, email: $email, profileImageUrl: $profileImageUrl, rating: $rating, reviewCount: $reviewCount, verified: $verified, createdAt: $createdAt)';
+    return 'User(id: $id, name: $name, email: $email, profileImageUrl: $profileImageUrl, rating: $rating, reviewCount: $reviewCount, verified: $verified, favorites: $favorites, createdAt: $createdAt)';
   }
 
   @override
@@ -247,14 +273,25 @@ class _$UserImpl implements _User {
                 other.reviewCount == reviewCount) &&
             (identical(other.verified, verified) ||
                 other.verified == verified) &&
+            const DeepCollectionEquality()
+                .equals(other._favorites, _favorites) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, email, profileImageUrl,
-      rating, reviewCount, verified, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      name,
+      email,
+      profileImageUrl,
+      rating,
+      reviewCount,
+      verified,
+      const DeepCollectionEquality().hash(_favorites),
+      createdAt);
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
@@ -281,6 +318,7 @@ abstract class _User implements User {
       final double rating,
       final int reviewCount,
       final bool verified,
+      final List<String> favorites,
       final DateTime? createdAt}) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
@@ -299,6 +337,8 @@ abstract class _User implements User {
   int get reviewCount;
   @override
   bool get verified;
+  @override
+  List<String> get favorites; // Lista de IDs das ofertas favoritas
   @override
   DateTime? get createdAt;
 

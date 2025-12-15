@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/firebase_offer_service.dart';
 import '../../services/firebase_request_service.dart';
+import '../../services/firebase_auth_service.dart'; // <--- IMPORTANTE
 import '../../models/offer_model.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -13,8 +14,6 @@ class ExploreTab extends StatefulWidget {
 
 class ExploreTabState extends State<ExploreTab> {
   late Future<List<Offer>> _offersFuture;
-
-  // Variável de estado para saber qual o filtro ativo
   String _selectedCategory = 'Todos';
 
   @override
@@ -25,7 +24,6 @@ class ExploreTabState extends State<ExploreTab> {
 
   void refreshOffers() {
     setState(() {
-      // Passamos a categoria selecionada para o serviço
       _offersFuture =
           FirebaseOfferService.getOffers(category: _selectedCategory);
     });
@@ -33,9 +31,7 @@ class ExploreTabState extends State<ExploreTab> {
 
   @override
   Widget build(BuildContext context) {
-    // Detetar Web/Tablet
     final isWeb = MediaQuery.of(context).size.width > 600;
-    // Largura máxima de 780px
     final contentWidth = isWeb ? 780.0 : double.infinity;
 
     return Column(
@@ -45,7 +41,7 @@ class ExploreTabState extends State<ExploreTab> {
           child: Container(
             width: contentWidth,
             padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -62,7 +58,7 @@ class ExploreTabState extends State<ExploreTab> {
                 decoration: InputDecoration(
                   hintText: 'Procurar habilidades...',
                   prefixIcon:
-                      const Icon(Icons.search, color: Color(0xFF8A4FFF)),
+                  const Icon(Icons.search, color: Color(0xFF8A4FFF)),
                   suffixIcon: Container(
                     margin: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -70,11 +66,11 @@ class ExploreTabState extends State<ExploreTab> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child:
-                        const Icon(Icons.tune, color: Colors.white, size: 20),
+                    const Icon(Icons.tune, color: Colors.white, size: 20),
                   ),
                   border: InputBorder.none,
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
               ),
             ),
@@ -151,24 +147,24 @@ class ExploreTabState extends State<ExploreTab> {
                 onRefresh: () async => refreshOffers(),
                 child: isWeb
                     ? GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          mainAxisExtent: 320,
-                        ),
-                        itemCount: offers.length,
-                        itemBuilder: (context, index) =>
-                            _buildOfferItem(context, offers[index]),
-                      )
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    mainAxisExtent: 320,
+                  ),
+                  itemCount: offers.length,
+                  itemBuilder: (context, index) =>
+                      _buildOfferItem(context, offers[index]),
+                )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: offers.length,
-                        itemBuilder: (context, index) =>
-                            _buildOfferItem(context, offers[index]),
-                      ),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: offers.length,
+                  itemBuilder: (context, index) =>
+                      _buildOfferItem(context, offers[index]),
+                ),
               );
             },
           ),
@@ -177,7 +173,6 @@ class ExploreTabState extends State<ExploreTab> {
     );
   }
 
-  // Gera os botões de categoria
   List<Widget> _buildFilterChips() {
     final categories = [
       'Todos',
@@ -198,7 +193,7 @@ class ExploreTabState extends State<ExploreTab> {
           onSelected: (selected) {
             setState(() {
               _selectedCategory = category;
-              refreshOffers(); // <--- ISTO CHAMA O FIREBASE COM O FILTRO
+              refreshOffers();
             });
           },
           backgroundColor: Colors.white,
@@ -210,7 +205,7 @@ class ExploreTabState extends State<ExploreTab> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           showCheckmark: false,
         ),
       );
@@ -226,6 +221,15 @@ class ExploreTabState extends State<ExploreTab> {
       reviews: offer.reviews,
       offering: offer.offering,
       lookingFor: offer.lookingFor,
+      // --- LÓGICA DE FAVORITOS ---
+      isFavorite: FirebaseAuthService.favoriteIds.contains(offer.id),
+      onFavoriteTap: () async {
+        // 1. Chamar o serviço para guardar no Firebase
+        await FirebaseAuthService.toggleFavorite(offer.id);
+        // 2. Atualizar o UI para pintar o coração
+        setState(() {});
+      },
+      // ---------------------------
       onContactTap: () async {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
