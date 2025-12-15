@@ -1,25 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/firebase_request_service.dart';
+import '../../services/firebase_auth_service.dart';
 
 class MessagesTab extends StatelessWidget {
   const MessagesTab({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
+    final currentUserId = FirebaseAuthService.userId;
+
+    return StreamBuilder<List<QueryDocumentSnapshot>>(
       stream: FirebaseRequestService.getRequestsStream(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Erro: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.mark_email_unread_outlined, size: 64, color: Colors.grey[300]),
+                Icon(Icons.mark_email_unread_outlined,
+                    size: 64, color: Colors.grey[300]),
                 const SizedBox(height: 16),
                 Text('Sem pedidos de contacto',
                     style: TextStyle(color: Colors.grey[600], fontSize: 16)),
@@ -28,7 +36,7 @@ class MessagesTab extends StatelessWidget {
           );
         }
 
-        final requests = snapshot.data!.docs;
+        final requests = snapshot.data!;
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -38,6 +46,12 @@ class MessagesTab extends StatelessWidget {
             final data = req.data() as Map<String, dynamic>;
             final status = data['status'] ?? 'pending';
             final isPending = status == 'pending';
+
+            final isSentByMe = data['fromUserId'] == currentUserId;
+            final otherUserName = isSentByMe
+                ? (data['toUserName'] ?? 'Utilizador')
+                : (data['fromUserName'] ?? 'Utilizador');
+            final offerTitle = data['offerTitle'] ?? 'Oferta';
 
             // Definir cores e ícones com base no estado
             Color statusColor;
@@ -63,7 +77,8 @@ class MessagesTab extends StatelessWidget {
 
             return Card(
               margin: const EdgeInsets.only(bottom: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               elevation: 2,
               shadowColor: Colors.black.withValues(alpha: .05),
               child: Padding(
@@ -74,10 +89,17 @@ class MessagesTab extends StatelessWidget {
                     Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: const Color(0xFFE5D4FF),
+                          backgroundColor: isSentByMe
+                              ? const Color(0xFFF0F0F0)
+                              : const Color(0xFFE5D4FF),
                           child: Text(
-                            (data['fromUserName'] ?? 'U')[0].toUpperCase(),
-                            style: const TextStyle(color: Color(0xFF8A4FFF), fontWeight: FontWeight.bold),
+                            (otherUserName.isNotEmpty ? otherUserName[0] : '?')
+                                .toUpperCase(),
+                            style: TextStyle(
+                                color: isSentByMe
+                                    ? Colors.grey[700]
+                                    : const Color(0xFF8A4FFF),
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -86,18 +108,25 @@ class MessagesTab extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                data['fromUserName'] ?? 'Utilizador',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                isSentByMe
+                                    ? 'Para: $otherUserName'
+                                    : otherUserName,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
                               ),
                               Text(
-                                'Interessado em: ${data['offerTitle']}',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                                isSentByMe
+                                    ? 'Pedido enviado: $offerTitle'
+                                    : 'Interessado em: $offerTitle',
+                                style: TextStyle(
+                                    color: Colors.grey[600], fontSize: 13),
                               ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: statusColor.withValues(alpha: .1),
                             borderRadius: BorderRadius.circular(8),
@@ -107,14 +136,16 @@ class MessagesTab extends StatelessWidget {
                               Icon(statusIcon, size: 14, color: statusColor),
                               const SizedBox(width: 4),
                               Text(statusText,
-                                  style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                                  style: TextStyle(
+                                      color: statusColor,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
                       ],
                     ),
-
-                    if (isPending) ...[
+                    if (isPending && !isSentByMe) ...[
                       const SizedBox(height: 16),
                       const Divider(),
                       const SizedBox(height: 8),
@@ -122,7 +153,8 @@ class MessagesTab extends StatelessWidget {
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: () => FirebaseRequestService.rejectRequest(req.id),
+                              onPressed: () =>
+                                  FirebaseRequestService.rejectRequest(req.id),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.red,
                                 side: const BorderSide(color: Colors.red),
@@ -133,7 +165,8 @@ class MessagesTab extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: () => FirebaseRequestService.acceptRequest(req.id),
+                              onPressed: () =>
+                                  FirebaseRequestService.acceptRequest(req.id),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF8A4FFF),
                                 foregroundColor: Colors.white,
